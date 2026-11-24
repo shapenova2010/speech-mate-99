@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SpeechMate KZ — Твой AI-тренер по публичным выступлениям</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome для иконок -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 50%, #db2777 100%);
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
+
+    <!-- Навигация -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-10 h-10 rounded-xl gradient-bg flex items-center justify-center text-white font-bold text-xl shadow-md">
+                    <i class="fa-solid fa-microphone-lines"></i>
+                </div>
+                <span class="text-xl font-bold bg-gradient-to-r from-indigo-600 to-pink-600 bg-clip-text text-transparent">
+                    SpeechMate KZ
+                </span>
+            </div>
+            <nav class="hidden md:flex space-x-6">
+                <button onclick="switchTab('trainer')" id="nav-trainer" class="text-indigo-600 font-medium transition hover:text-indigo-700">Тренажер</button>
+                <button onclick="switchTab('analytics')" id="nav-analytics" class="text-slate-600 font-medium transition hover:text-indigo-700">История и Аналитика</button>
+                <button onclick="switchTab('exercises')" id="nav-exercises" class="text-slate-600 font-medium transition hover:text-indigo-700">Упражнения</button>
+            </nav>
+            <div class="flex items-center space-x-3">
+                <button onclick="toggleLang()" id="lang-btn" class="px-3 py-1.5 text-xs font-semibold rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 transition">
+                    🇰🇿 QAZ / RU
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Основной контент -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Секция: Тренажер -->
+        <section id="tab-trainer" class="space-y-6">
+            <div class="text-center max-w-2xl mx-auto space-y-2">
+                <h1 class="text-3xl font-extrabold text-slate-900">AI-тренировка публичных выступлений</h1>
+                <p class="text-slate-600">Запишите свою речь или текст, а искусственный интеллект проанализирует темп, уверенность и структуру.</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Панель настройки и записи -->
+                <div class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                    <h2 class="text-lg font-semibold text-slate-950">Параметры сессии</h2>
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Режим тренировки</label>
+                        <select id="mode-select" class="w-full rounded-xl border-slate-300 border p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="pitch">Презентация стартапа / Pitch</option>
+                            <option value="exam">Защита проекта / Диплом</option>
+                            <option value="toast">Тост / Поздравление</option>
+                            <option value="free">Свободная речь</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Целевое время (сек)</label>
+                        <input type="number" id="target-time" value="60" class="w-full rounded-xl border-slate-300 border p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-100">
+                        <button id="record-btn" onclick="toggleRecording()" class="w-full py-3 px-4 rounded-xl gradient-bg text-white font-medium shadow-md hover:opacity-95 transition flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-microphone" id="record-icon"></i>
+                            <span id="record-text">Начать запись речи</span>
+                        </button>
+                    </div>
+
+                    <div id="recording-status" class="hidden text-center text-sm text-pink-600 font-medium animate-pulse flex items-center justify-center space-x-2">
+                        <span class="w-2.5 h-2.5 rounded-full bg-pink-600"></span>
+                        <span>Идет запись... <span id="timer">00:00</span></span>
+                    </div>
+                </div>
+
+                <!-- Панель расшифровки и результатов -->
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+                        <h2 class="text-lg font-semibold text-slate-950 flex items-center justify-between">
+                            <span>Расшифровка речи</span>
+                            <span id="word-count" class="text-xs font-normal text-slate-500">Слов: 0</span>
+                        </h2>
+                        <div id="transcript-box" class="w-full h-40 p-4 rounded-xl border border-slate-200 bg-slate-50 text-slate-700 text-sm overflow-y-auto">
+                            Здесь появится текст вашей речи после завершения записи или симуляции...
+                        </div>
+                    </div>
+
+                    <!-- Карточки оценки -->
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+                        <h2 class="text-lg font-semibold text-slate-950">AI-Оценка выступления</h2>
+                        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4" id="metrics-grid">
+                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                                <span class="text-xs text-slate-500 block">Темп речи</span>
+                                <span class="text-xl font-bold text-slate-800" id="metric-pace">—</span>
+                            </div>
+                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                                <span class="text-xs text-slate-500 block">Уверенность</span>
+                                <span class="text-xl font-bold text-slate-800" id="metric-conf">—</span>
+                            </div>
+                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                                <span class="text-xs text-slate-500 block">Слова-паразиты</span>
+                                <span class="text-xl font-bold text-slate-800" id="metric-fillers">—</span>
+                            </div>
+                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-100 text-center">
+                                <span class="text-xs text-slate-500 block">Итог</span>
+                                <span class="text-xl font-bold text-indigo-600" id="metric-total">—</span>
+                            </div>
+                        </div>
+                        <div id="ai-feedback" class="text-sm text-slate-600 bg-indigo-50/50 border border-indigo-100 p-4 rounded-xl hidden">
+                            <!-- Советы AI -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Секция: Аналитика -->
+        <section id="tab-analytics" class="hidden space-y-6">
+            <h1 class="text-3xl font-extrabold text-slate-900">История и Аналитика</h1>
+            <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200">
+                <p class="text-slate-600">Здесь будет отображаться ваш прогресс тренировок со временем.</p>
+            </div>
+        </section>
+
+        <!-- Секция: Упражнения -->
+        <section id="tab-exercises" class="hidden space-y-6">
+            <h1 class="text-3xl font-extrabold text-slate-900">Упражнения для дикции и дыхания</h1>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+                    <h3 class="font-bold text-slate-900">Дыхательная разминка</h3>
+                    <p class="text-sm text-slate-600">Упражнение «Квадратное дыхание» для снятия зажимов перед выходом.</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+                    <h3 class="font-bold text-slate-900">Скороговорки на казахском</h3>
+                    <p class="text-sm text-slate-600">Тренировка специфических звуков и четкости дикции.</p>
+                </div>
+                <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+                    <h3 class="font-bold text-slate-900">Борьба с và-паразитами</h3>
+                    <p class="text-sm text-slate-600">Практика пауз вместо слов-паразитов («эээ», «типа»).</p>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JavaScript логика -->
+    <script>
+        let isRecording = false;
+        let timerInterval = null;
+        let secondsElapsed = 0;
+
+        function switchTab(tabId) {
+            ['trainer', 'analytics', 'exercises'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`nav-${t}`).classList.remove('text-indigo-600', 'font-medium');
+                document.getElementById(`nav-${t}`).classList.add('text-slate-600');
+            });
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            document.getElementById(`nav-${tabId}`).classList.add('text-indigo-600', 'font-medium');
+            document.getElementById(`nav-${tabId}`).classList.remove('text-slate-600');
+        }
+
+        function toggleRecording() {
+            const btn = document.getElementById('record-btn');
+            const icon = document.getElementById('record-icon');
+            const text = document.getElementById('record-text');
+            const status = document.getElementById('recording-status');
+            const transcript = document.getElementById('transcript-box');
+            
+            isRecording = !isRecording;
+
+            if (isRecording) {
+                icon.className = "fa-solid fa-stop";
+                text.textContent = "Остановить запись";
+                status.classList.remove('hidden');
+                transcript.textContent = "Слушаем вашу речь...";
+                secondsElapsed = 0;
+                
+                timerInterval = setInterval(() => {
+                    secondsElapsed++;
+                    let mins = String(Math.floor(secondsElapsed / 60)).padStart(2, '0');
+                    let secs = String(secondsElapsed % 60).padStart(2, '0');
+                    document.getElementById('timer').textContent = `${mins}:${secs}`;
+                }, 1000);
+            } else {
+                icon.className = "fa-solid fa-microphone";
+                text.textContent = "Начать запись речи";
+                status.classList.add('hidden');
+                clearInterval(timerInterval);
+
+                // Имитация ответа ИИ
+                transcript.textContent = "Здравствуйте! Сегодня я хочу представить наш проект, который поможет каждому улучшить навыки публичных выступлений...";
+                document.getElementById('word-count').textContent = "Слов: 18";
+                document.getElementById('metric-pace').textContent = "Норма";
+                document.getElementById('metric-conf').textContent = "85%";
+                document.getElementById('metric-fillers').textContent = "2 слова";
+                document.getElementById('metric-total').textContent = "8.2 / 10";
+
+                const feedback = document.getElementById('ai-feedback');
+                feedback.classList.remove('hidden');
+                feedback.innerHTML = "<strong>💡 AI-рекомендация:</strong> Отличный темп речи! Постарайтесь уменьшить количество пауз-паразитов в начале предложения и держите зрительный контакт.";
+            }
+        }
+
+        function toggleLang() {
+            alert("Переключение языка интерфейса (QAZ/RU) в разработке!");
+        }
+    </script>
+</body>
+</html>
